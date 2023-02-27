@@ -16,7 +16,7 @@ import { JwtAuthGuard } from "../auth/jwt-auth.guard";
 @Controller("users")
 export class UsersController {
   constructor(private usersService: UsersService) {}
-
+// Get all users
   @ApiOperation({
     summary: "Get users",
     description: `You can get users depend or role: [ADMIN, USER, BOSS].</br> 
@@ -31,7 +31,7 @@ export class UsersController {
   getAll(@Headers("authorization") authHeader: string) {
     return this.usersService.getAllUsers(authHeader);
   }
-
+// Update user
   @ApiOperation({
     summary: "Update user",
     description: `You can update user. For it you need:</br>
@@ -43,13 +43,14 @@ export class UsersController {
   <strong> All ids must be a number.</strong></br></br>
   For update user you need have a 'Bearer token' (you can get token after Sign in or Sign up)`,
   })
-  @ApiResponse({ status: 200, type: User })
+  @ApiResponse({ status: 200, type: User , description: '<strong>Response: { "success": true }</strong>'})
   @UseGuards(JwtAuthGuard)
   @Put("/:idBoss")
   change(
     @Param("idBoss") idBoss: string,
-    @Body() userData: { idUser: number; newIdBoss: number }
+    @Body() userData: { idUser: number; newIdBoss: number },
+    @Headers("authorization") authToken: string
   ) {
-    return this.usersService.updateUser({ idBoss, ...userData });
+    return this.usersService.updateUser({ idBoss,authToken, ...userData });
   }
 }

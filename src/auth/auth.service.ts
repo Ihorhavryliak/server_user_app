@@ -23,11 +23,24 @@ export class AuthService {
   }
 
   async registration(userDto: CreateUserDto) {
+    // Check if the user role includes "USER" or "ADMIN" or "BOSS"
+    if (
+      !(
+        userDto.role.includes("USER") ||
+        userDto.role.includes("ADMIN") ||
+        userDto.role.includes("BOSS")
+      )
+    ) {
+      throw new HttpException(
+        "You role must be a USER or a ADMIN or a BOSS",
+        HttpStatus.BAD_REQUEST
+      );
+    }
     // Check if the user role includes "USER" and the boss with the given ID exists
     if (userDto.role.includes("USER")) {
       const boss = await this.userService.getBossById(userDto.bossId);
       if (!boss) {
-        throw new HttpException("Boss not found", HttpStatus.BAD_REQUEST);
+        throw new HttpException("Boss not found. You need add bossId or set correct bossId.", HttpStatus.BAD_REQUEST);
       }
     }
 

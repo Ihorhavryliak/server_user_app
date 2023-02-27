@@ -1,3 +1,4 @@
+import { Roles } from "./../auth/roles-auth.decorator";
 import {
   ForbiddenException,
   Injectable,
@@ -51,10 +52,16 @@ export class UsersService {
     if (user.role.includes("BOSS")) {
       // Find the boss's information
       const boss = await this.userRepository.findByPk(user.id);
+      // If not find a boss
+      if(!boss){
+        throw new UnauthorizedException({
+          message: "Boss no found",
+        });
+      }
       // Find all the users that belong to the boss or to the boss's subordinates
       const users = await this.userRepository.findAll({
         where: {
-          [Op.or]: [{ bossId: user.id }, { id: user.id }],
+          bossId: user.id
         },
       });
       // Convert the list of users into a tree structure where each boss has their subordinates as children
@@ -78,14 +85,37 @@ export class UsersService {
           message: "You must to have a boss",
         });
       }
-      // Otherwise, find the user's information and return it
-      const users = await this.userRepository.findByPk(user.id);
-      return users;
+ 
     }
   }
   // Method for update a user by ids
-  async updateUser(ids: { idBoss: string; idUser: number; newIdBoss: number }) {
+  async updateUser(ids: {
+    idBoss: string;
+    authToken: string;
+    idUser: number;
+    newIdBoss: number;
+  }) {
+    // Extract the JWT token from the Authorization header
+    const token = ids.authToken.split(" ")[1];
+    // Verify the token and extract the user information from it
+    const userTokenData = this.jwtService.verify(token);
+    // Check if current bossId matches ids.idBoss
+    if (!userTokenData.role.includes("BOSS")) {
+      // Throw error if they don't match
+      throw new ForbiddenException({
+        success: false,
+        message: "You must be to have a role BOSS if you want to change a boss",
+      });
+    }
+    //find user
     const userData = await this.userRepository.findByPk(ids.idUser);
+    if(!userData){
+        // Throw error if they don't match
+        throw new ForbiddenException({
+          success: false,
+          message: "User not found",
+        });
+    }
     // Check if current bossId matches ids.idBoss
     if (+ids.idBoss !== userData.bossId) {
       // Throw error if they don't match
@@ -95,24 +125,24 @@ export class UsersService {
       });
     }
 
-    //
+    // find boss
     const isUserBoss = await this.userRepository.findByPk(ids.newIdBoss);
     // Check if user is boss
-    if (!isUserBoss.bossId) {
+    if (!isUserBoss) {
       // Throw error if they don't match
       throw new ForbiddenException({
         success: false,
-        message: "User not found or user is not a boss",
+        message: "Boss not found",
       });
     }
 
     // Update user data in repository
-    const user = await this.userRepository.update(
+    await this.userRepository.update(
       { bossId: ids.newIdBoss },
       { where: { id: ids.idUser } }
     );
-    // Return the newly updated user
-    return user;
+    // Return the resp
+    return { success: true };
   }
 
   // Method for check is email in DB
