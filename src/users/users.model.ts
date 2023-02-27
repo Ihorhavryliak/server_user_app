@@ -2,7 +2,6 @@ import {
   Column,
   DataType,
   ForeignKey,
-  HasMany,
   Model,
   Table,
 } from "sequelize-typescript";
@@ -18,7 +17,8 @@ interface UserCreationAttrs {
 
 @Table({ tableName: "users" })
 export class User extends Model<User, UserCreationAttrs> {
-  @ApiProperty({ example: "1", description: "Уникальный идентификатор" })
+  // This decorator adds an integer
+  @ApiProperty({ example: "1", description: "Unique indemnificator" })
   @Column({
     type: DataType.INTEGER,
     unique: true,
@@ -26,24 +26,25 @@ export class User extends Model<User, UserCreationAttrs> {
     primaryKey: true,
   })
   id: number;
-
-  @ApiProperty({ example: "user@gmail.com", description: "Почтовый адрес" })
+  // This decorator adds a user's email
+  @ApiProperty({ example: "user@gmail.com", description: "Email" })
   @Column({ type: DataType.STRING, unique: true, allowNull: false })
   email: string;
-
-  @ApiProperty({ example: "12345678", description: "Пароль" })
+  // This decorator adds a user's password
+  @ApiProperty({ example: "12345678", description: "Password" })
   @Column({ type: DataType.STRING, allowNull: false })
   password: string;
 
+  // This decorator adds a number foreign key for a boss, if present
   @ApiProperty({
     example: "null",
-    description: "childId  - force on main post id",
+    description: "Boss id",
   })
   @ForeignKey(() => User)
   @Column({ type: DataType.INTEGER })
   bossId: number;
-
-  @ApiProperty({ example: "12345678", description: "Пароль" })
+  //This decorator adds an array of strings which specifies each user's individual roles
+  @ApiProperty({ example: "12345678", description: "User role" })
   @Column({ type: DataType.ARRAY(DataType.STRING), allowNull: false })
   role: string[];
 }

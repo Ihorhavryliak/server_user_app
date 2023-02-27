@@ -9,48 +9,55 @@ import { CreateUserDto } from "./dto/create-user.dto";
 import { JwtService } from "@nestjs/jwt";
 import { Op } from "sequelize";
 
+// Marking the class as injectable so that NestJS can inject its dependencies
 @Injectable()
 export class UsersService {
   constructor(
     @InjectModel(User) private userRepository: typeof User,
     private jwtService: JwtService
   ) {}
-
+  // Method for creating a new user
   async createUser(dto: CreateUserDto) {
-    //User
+    // If the user's role includes "USER"
     if (dto.role.includes("USER")) {
+      // If the bossId is not provided in the request, throw a ForbiddenException
       if (!dto.bossId) {
         throw new ForbiddenException({
           message: "The bossId require",
         });
       }
+      // Otherwise, create the user and return it
       const user = await this.userRepository.create(dto);
       return user;
     }
-    //Admin / boss
+    // If the user's role does not include "USER", simply create the user and return it
     const user = await this.userRepository.create(dto);
     return user;
   }
-
+  // Method for getting all users
   async getAllUsers(authHeader: string) {
+    // Extract the JWT token from the Authorization header
     const token = authHeader.split(" ")[1];
+    // Verify the token and extract the user information from it
     const user = this.jwtService.verify(token);
-
+    // If the user's role includes "ADMIN", return all users
     if (user.role.includes("ADMIN")) {
       const users = await this.userRepository.findAll({
         include: { all: true },
       });
       return users;
     }
-
+    // If the user's role includes "BOSS", return all users belonging to the boss and their subordinates
     if (user.role.includes("BOSS")) {
+      // Find the boss's information
       const boss = await this.userRepository.findByPk(user.id);
+      // Find all the users that belong to the boss or to the boss's subordinates
       const users = await this.userRepository.findAll({
         where: {
           [Op.or]: [{ bossId: user.id }, { id: user.id }],
         },
       });
-
+      // Convert the list of users into a tree structure where each boss has their subordinates as children
       const usersBosArr = [boss].map((boss) => {
         const children = users;
         return {
@@ -58,22 +65,57 @@ export class UsersService {
           children,
         };
       });
+      // Stringify and then parse the tree structure to remove any circular references
       const stringify = JSON.stringify(usersBosArr);
       const result = JSON.parse(stringify);
       return result;
     }
-
+    // If the user's role includes "USER", return the user's information
     if (user.role.includes("USER")) {
+      // If the user does not have a boss, throw an UnauthorizedException
       if (!user.bossId) {
         throw new UnauthorizedException({
-          message: "Некорректный name или id Boss",
+          message: "You must to have a boss",
         });
       }
+      // Otherwise, find the user's information and return it
       const users = await this.userRepository.findByPk(user.id);
       return users;
     }
   }
+  // Method for update a user by ids
+  async updateUser(ids: { idBoss: string; idUser: number; newIdBoss: number }) {
+    const userData = await this.userRepository.findByPk(ids.idUser);
+    // Check if current bossId matches ids.idBoss
+    if (+ids.idBoss !== userData.bossId) {
+      // Throw error if they don't match
+      throw new ForbiddenException({
+        success: false,
+        message: "You are not Boss for this user",
+      });
+    }
 
+    //
+    const isUserBoss = await this.userRepository.findByPk(ids.newIdBoss);
+    // Check if user is boss
+    if (!isUserBoss.bossId) {
+      // Throw error if they don't match
+      throw new ForbiddenException({
+        success: false,
+        message: "User not found or user is not a boss",
+      });
+    }
+
+    // Update user data in repository
+    const user = await this.userRepository.update(
+      { bossId: ids.newIdBoss },
+      { where: { id: ids.idUser } }
+    );
+    // Return the newly updated user
+    return user;
+  }
+
+  // Method for check is email in DB
   async getUserByEmail(email: string) {
     const user = await this.userRepository.findOne({
       where: { email },
@@ -81,23 +123,9 @@ export class UsersService {
     });
     return user;
   }
-
-  async updateUser(ids: { idBoss: string; idUser: number; newIdBoss: number }) {
-    // find user
-    console.log(ids);
-    const userData = await this.userRepository.findByPk(ids.idUser);
-    //check
-    if (+ids.idBoss !== userData.bossId) {
-      throw new ForbiddenException({
-        success: false,
-        message: "You are not Boss for this user",
-      });
-    }
-    //update
-    const user = await this.userRepository.update(
-      { bossId: ids.newIdBoss },
-      { where: { id: ids.idUser } }
-    );
-    return user;
+  // Method for check is boss by id
+  async getBossById(id: number) {
+    const boss = await this.userRepository.findByPk(id);
+    return boss;
   }
 }

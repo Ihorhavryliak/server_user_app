@@ -7,6 +7,7 @@ import { AuthModule } from "./auth/auth.module";
 import { ServeStaticModule } from "@nestjs/serve-static";
 import * as path from "path";
 
+// Configuring App Module
 @Module({
   controllers: [],
   providers: [],
@@ -18,17 +19,17 @@ import * as path from "path";
       rootPath: path.resolve(__dirname, "static"),
     }),
     SequelizeModule.forRoot({
-      dialect: "postgres",
-      host: process.env.POSTGRES_HOST,
-      port: Number(process.env.POSTGRES_PORT),
-      username: process.env.POSTGRES_USER,
-      password: process.env.POSTGRES_PASSWORD,
-      database: process.env.POSTGRES_DB,
-      models: [User],
-      autoLoadModels: true,
+      dialect: "postgres", // For PostgreSQL
+      host: process.env.POSTGRES_HOST, // Host URL
+      port: Number(process.env.POSTGRES_PORT), // Port number
+      username: process.env.POSTGRES_USER, // Username
+      password: process.env.POSTGRES_PASSWORD, // Password
+      database: process.env.POSTGRES_DB, // Database name
+      models: [User], // Models from ./users/users.model
+      autoLoadModels: true, // Auto load models
     }),
-    UsersModule,
-    AuthModule,
+    UsersModule, // UsersModule
+    AuthModule, // Authentication Module
   ],
 })
 export class AppModule {}
