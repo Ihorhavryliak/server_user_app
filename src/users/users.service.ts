@@ -53,7 +53,7 @@ export class UsersService {
       // Find the boss's information
       const boss = await this.userRepository.findByPk(user.id);
       // If not find a boss
-      if(!boss){
+      if (!boss) {
         throw new UnauthorizedException({
           message: "Boss no found",
         });
@@ -61,7 +61,7 @@ export class UsersService {
       // Find all the users that belong to the boss or to the boss's subordinates
       const users = await this.userRepository.findAll({
         where: {
-          bossId: user.id
+          bossId: user.id,
         },
       });
       // Convert the list of users into a tree structure where each boss has their subordinates as children
@@ -85,7 +85,6 @@ export class UsersService {
           message: "You must to have a boss",
         });
       }
- 
     }
   }
   // Method for update a user by ids
@@ -109,12 +108,12 @@ export class UsersService {
     }
     //find user
     const userData = await this.userRepository.findByPk(ids.idUser);
-    if(!userData){
-        // Throw error if they don't match
-        throw new ForbiddenException({
-          success: false,
-          message: "User not found",
-        });
+    if (!userData) {
+      // Throw error if they don't match
+      throw new ForbiddenException({
+        success: false,
+        message: "User not found",
+      });
     }
     // Check if current bossId matches ids.idBoss
     if (+ids.idBoss !== userData.bossId) {

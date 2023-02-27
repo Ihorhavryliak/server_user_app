@@ -40,7 +40,10 @@ export class AuthService {
     if (userDto.role.includes("USER")) {
       const boss = await this.userService.getBossById(userDto.bossId);
       if (!boss) {
-        throw new HttpException("Boss not found. You need add bossId or set correct bossId.", HttpStatus.BAD_REQUEST);
+        throw new HttpException(
+          "Boss not found. You need add bossId or set correct bossId.",
+          HttpStatus.BAD_REQUEST
+        );
       }
     }
 

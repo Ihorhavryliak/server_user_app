@@ -4,8 +4,6 @@ import { UsersModule } from "./users/users.module";
 import { ConfigModule } from "@nestjs/config";
 import { User } from "./users/users.model";
 import { AuthModule } from "./auth/auth.module";
-import { ServeStaticModule } from "@nestjs/serve-static";
-import * as path from "path";
 
 // Configuring App Module
 @Module({
