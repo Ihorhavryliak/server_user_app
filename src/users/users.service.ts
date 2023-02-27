@@ -85,6 +85,9 @@ export class UsersService {
           message: "You must to have a boss",
         });
       }
+      // Otherwise, find the user's information and return it
+      const users = await this.userRepository.findByPk(user.id);
+      return users;
     }
   }
   // Method for update a user by ids
