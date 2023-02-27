@@ -1,3 +1,8 @@
+
+# Server Documentation
+ [Server documentation](https://server-user-app.onrender.com/)
+
+#
 ## Description
 
 This project is a tiny server app based on Node.js that implements simple organization user structure management operations. The app supports three user roles: Administrator, Boss, and Regular user. The Administrator is the top-most user, the Boss is any user with at least one subordinate, and the Regular user is a user without subordinates. Each user except the Administrator must have a boss (strictly one). The app exposes four REST API endpoints: Register user, Authenticate as a user, Return list of users, and Change user's boss.
@@ -26,11 +31,17 @@ To get started with the Message App, follow these steps:
 ## file `.env` with variables::
 
 `PORT=5000`
+
 `POSTGRES_HOST=localhost`
+
 `POSTGRES_USER=postgres`
+
 `POSTGRES_DB=data_base`
+
 `POSTGRES_PASSWORD=Zazapu1995`
+
 `POSTGRES_PORT=5432`
+
 `PRIVATE_KEY=bc32ef6f88e404ae3246856ecfd30be67da4603cec4b9e763a8ad8a309ffe463122bf3c245a3519f1aa928ce61a69ee4835938923b481546cf9b0f7e4c04a75f`
 
 ## Run
